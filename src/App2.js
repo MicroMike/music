@@ -34,7 +34,6 @@ class Crunker {
 
   mergeAudio(buffers) {
     let output = this._context.createBuffer(1, this._maxDuration(buffers), frames);
-
     buffers.map(buffer => {
       try {
         for (let i = buffer.getChannelData(0).length - 1; i >= 0; i--) {
@@ -54,7 +53,7 @@ class Crunker {
     for (let i = 0; i < loop; i++) {
       arr.push(this.mergeAudio(buffers))
     }
-    console.log(arr)
+    // console.log(arr)
     return this.concatAudio(arr)
   }
 
@@ -99,6 +98,10 @@ class Crunker {
     const source = this._context.createBufferSource();
     source.buffer = buffer;
     source.connect(this._context.destination);
+    // let gainNode = this._context.createGain();
+    // source.connect(gainNode);
+    // gainNode.connect(this._context.destination);
+    // gainNode.gain.value = 0.1;
     source.start();
     return source;
   }
@@ -223,25 +226,6 @@ function randSound(nb, max) {
   return rands
 }
 
-function shuffle(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex;
-
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
-
-  return array;
-}
-
 const lowPassFilter = (s, f, p) => {
   const filter = new Pizzicato.Effects.LowPassFilter({
     frequency: f,
@@ -275,114 +259,97 @@ class App extends Component {
   run() {
     count = count || this.count
 
-    // let end
-    // let tempo = 0.075
-
-    // for (let filename of sounds) {
-    //   const s = new Pizzicato.Sound('/Wav/' + filename, () => {
-    //     let notes = []
-    //     for (let i = 0; i < 20000; i += 2000) {
-    //       const b = HighPassFilter(s, i, 10)
-    //       let news = b.getRawSourceNode().buffer
-    //       if (tempo > 0.1) {
-    //         end = audio.concatAudio([end, news], tempo)
-    //       }
-    //       else {
-    //         end = news
-    //       }
-    //       tempo += 0.025
-    //     }
-    //     audio.play(end)
-    //   })
-    //   break
-    // }
-
     const getsound = audio.fetchAudio(sounds, '/House_wave/')
     getsound
       .then(arr => {
         const getbuffer = arr.map(b => b.buffer)
-        const bass = [[
-          getbuffer[0]
-        ],
-        [
-          getbuffer[1],
-          getbuffer[2],
-          getbuffer[3],
-        ],
-        [
-          getbuffer[4],
-          getbuffer[5],
-          getbuffer[6],
-          getbuffer[7],
-          getbuffer[8],
-          getbuffer[9],
-          getbuffer[10],
-        ],
-        [
-          getbuffer[11],
-          getbuffer[12],
-          getbuffer[13],
-          getbuffer[14],
-          getbuffer[15],
-          getbuffer[16],
-          getbuffer[17],
-        ]]
 
+        let bass = getbuffer.filter(a => a.duration < 2)
         let sounds3 = getbuffer.filter(a => a.duration > 2 && a.duration < 5)
         let sounds7 = getbuffer.filter(a => a.duration > 5 && a.duration < 10)
         let soundslong = getbuffer.filter(a => a.duration > 10)
+        let name = ''
 
         const makeMusic = () => {
-          const frand = rand(bass.length);
-          const fsrand = bass[frand][rand(bass[frand].length)]
-          const srand = sounds3[rand(sounds3.length)]
-          const srand7 = () => sounds7[rand(sounds7.length)]
-          const slrand = soundslong[rand(soundslong.length)]
+          let randbass = []
+          let randsounds3 = []
+          let randsounds7 = []
 
-          console.log(frand,
-            fsrand,
-            srand,
-            srand7,
-            slrand
-          )
+          const fsrand = () => {
+            let nb = rand(bass.length)
+            while (randbass.indexOf(nb) > -1) {
+              console.log('double dodged')
+              nb = rand(bass.length)
+            }
+            randbass.push(nb)
+            return bass[nb]
+          }
+          const srand = () => {
+            let nb = rand(sounds3.length)
+            while (randsounds3.indexOf(nb) > -1) {
+              console.log('double dodged')
+              nb = rand(sounds3.length)
+            }
+            randsounds3.push(nb)
+            return sounds3[nb]
+          }
+          const srand7 = () => {
+            let nb = rand(sounds7.length)
+            while (randsounds7.indexOf(nb) > -1) {
+              console.log('double dodged')
+              nb = rand(sounds7.length)
+            }
+            randsounds7.push(nb)
+            return sounds7[nb]
+          }
+          // const slrand = soundslong[rand(soundslong.length)]
 
-          const music = [
-            audio.concatAudio([fsrand], 0, 16),
-            audio.concatAudio([srand], 0, 8),
-            audio.concatAudio([srand7(), srand7(), srand7(), srand7()]),
-            // audio.concatAudio([slrand], 0, 2),
-          ];
+          // const smallbase = audio.mergeAudio([
+          //   audio.concatAudio([fsrand()], 0, 2),
+          //   audio.concatAudio([srand()], 0, 1),
+          // ]);
 
-          console.log(music)
-          // let merged1 = audio.mergeAudio(music)
-          // let merged2 = audio.mergeAudio(music2)
-          // let merged = audio.concatAudio([merged1, merged2]);
-          let merged = audio.mergeAudioLoop(music, 1)
-          // console.log(merged)
+          const fsrand1 = fsrand()
+          const fsrand2 = fsrand()
+          const fsrand3 = fsrand()
+
+          const base = audio.mergeAudio([
+            audio.concatAudio([fsrand1], 0, 2),
+            audio.concatAudio([fsrand2], 0, 2),
+            audio.concatAudio([fsrand3], 0, 2),
+          ]);
+
+          const smallbase = audio.concatAudio([base], 0, 2)
+          const longBase = audio.concatAudio([base], 0, 4)
+
+          let repeat = () => rand(6) + 4
+          let middleBase = audio.mergeAudioLoop([fsrand1, fsrand2, fsrand()], repeat())
+
+          const longBody1 = srand7()
+          const longBody2 = audio.concatAudio([srand()], 0, 2)
+          console.log(longBody1, longBody2)
+
+          const body = audio.concatAudio([longBody1, longBody2], 0, 1)
+          const body2 = audio.mergeAudioLoop([longBody1, longBody2], 2)
+
+          const all = audio.mergeAudio([longBase, body])
+          const all2 = audio.mergeAudio([longBase, body2])
+
+          let merged = audio.concatAudio([smallbase, middleBase, all, all2, middleBase, smallbase])
           console.log('final duration :' + merged.duration);
           const output = audio.export(merged, 'audio/wav')
-          audio.play(merged)
-          // console.log(output);
-          // const download = audio.download(output.blob, '' + frand + fsrand + srand + srand7 + slrand);
-        }
+          // audio.play(merged)
+          console.log(output);
+          const download = audio.download(output.blob, '' + 1000000 + rand(1000000));
 
-        if (--this.count >= 0) {
-          console.log('...')
-          makeMusic()
+          if (--this.count > 0) {
+            // console.log(this.count)
+            makeMusic()
+          }
         }
-        // console.log(download);
-        // audio.mergeAudio(buffers)
+        makeMusic()
+
       })
-      // .then(merged => {
-      //   // => AudioBuffer
-      //   audio.export(merged, 'audio/mp3')
-      // })
-      // .then(output => {
-      //   // => {blob, element, url}
-      //   audio.download(output.blob);
-      //   document.append(output.element);
-      //   console.log(output.url);
-      // })
       .catch((error) => {
         // => Error Message
       });
@@ -411,7 +378,7 @@ class App extends Component {
 
     return array;
   }
-
+  count = 1
   render() {
     // this.run(10)
     return (
@@ -423,7 +390,7 @@ class App extends Component {
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
-        <input type="text" value={this.count} ref={e => this.count = e.value} defaultValue="1" />
+        <input type="text" onChange={e => this.count = e.target.value} defaultValue="1" />
         <button onClick={this.run.bind(this)}>RUN</button>
       </div>
     );
