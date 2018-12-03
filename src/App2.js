@@ -3,12 +3,17 @@ import Pizzicato from 'pizzicato';
 import logo from './logo.svg';
 import './App.css';
 
-const frames = 44100
-let sounds = []
-let i = 0
-while (++i <= 339) {
-  sounds.push('Sound (' + i + ').WAV')
+function rand(max, min = 1) {
+  return Math.floor(Math.random() * Math.floor(max)) + min;
 }
+
+const randSound = (range, str) => {
+  let nb = rand(range)
+  return str.replace('*', nb)
+}
+
+const frames = 44100
+let i = 0
 
 class Crunker {
 
@@ -214,18 +219,6 @@ class Crunker {
 
 }
 
-function rand(max, min = 0) {
-  return Math.floor(Math.random() * Math.floor(max)) + min;
-}
-
-function randSound(nb, max) {
-  const rands = []
-  for (let i = 0; i < nb; i++) {
-    rands.push(rand(max, 1))
-  }
-  return rands
-}
-
 const lowPassFilter = (s, f, p) => {
   const filter = new Pizzicato.Effects.LowPassFilter({
     frequency: f,
@@ -256,103 +249,137 @@ class App extends Component {
     super()
     this.count
   }
+
   run() {
-    count = count || this.count
-
-    const getsound = audio.fetchAudio(sounds, '/House_wave/')
-    getsound
-      .then(arr => {
-        const getbuffer = arr.map(b => b.buffer)
-
-        let bass = getbuffer.filter(a => a.duration < 2)
-        let sounds3 = getbuffer.filter(a => a.duration > 2 && a.duration < 5)
-        let sounds7 = getbuffer.filter(a => a.duration > 5 && a.duration < 10)
-        let soundslong = getbuffer.filter(a => a.duration > 10)
-        let name = ''
-
-        const makeMusic = () => {
-          let randbass = []
-          let randsounds3 = []
-          let randsounds7 = []
-
-          const fsrand = () => {
-            let nb = rand(bass.length)
-            while (randbass.indexOf(nb) > -1) {
-              console.log('double dodged')
-              nb = rand(bass.length)
-            }
-            randbass.push(nb)
-            return bass[nb]
-          }
-          const srand = () => {
-            let nb = rand(sounds3.length)
-            while (randsounds3.indexOf(nb) > -1) {
-              console.log('double dodged')
-              nb = rand(sounds3.length)
-            }
-            randsounds3.push(nb)
-            return sounds3[nb]
-          }
-          const srand7 = () => {
-            let nb = rand(sounds7.length)
-            while (randsounds7.indexOf(nb) > -1) {
-              console.log('double dodged')
-              nb = rand(sounds7.length)
-            }
-            randsounds7.push(nb)
-            return sounds7[nb]
-          }
-          // const slrand = soundslong[rand(soundslong.length)]
-
-          // const smallbase = audio.mergeAudio([
-          //   audio.concatAudio([fsrand()], 0, 2),
-          //   audio.concatAudio([srand()], 0, 1),
-          // ]);
-
-          const fsrand1 = fsrand()
-          const fsrand2 = fsrand()
-          const fsrand3 = fsrand()
-
-          const base = audio.mergeAudio([
-            audio.concatAudio([fsrand1], 0, 2),
-            audio.concatAudio([fsrand2], 0, 2),
-            audio.concatAudio([fsrand3], 0, 2),
-          ]);
-
-          const smallbase = audio.concatAudio([base], 0, 2)
-          const longBase = audio.concatAudio([base], 0, 4)
-
-          let repeat = () => rand(6) + 4
-          let middleBase = audio.mergeAudioLoop([fsrand1, fsrand2, fsrand()], repeat())
-
-          const longBody1 = srand7()
-          const longBody2 = audio.concatAudio([srand()], 0, 2)
-          console.log(longBody1, longBody2)
-
-          const body = audio.concatAudio([longBody1, longBody2], 0, 1)
-          const body2 = audio.mergeAudioLoop([longBody1, longBody2], 2)
-
-          const all = audio.mergeAudio([longBase, body])
-          const all2 = audio.mergeAudio([longBase, body2])
-
-          let merged = audio.concatAudio([smallbase, middleBase, all, all2, middleBase, smallbase])
-          console.log('final duration :' + merged.duration);
-          const output = audio.export(merged, 'audio/wav')
-          // audio.play(merged)
-          console.log(output);
-          const download = audio.download(output.blob, '' + 1000000 + rand(1000000));
-
-          if (--this.count > 0) {
-            // console.log(this.count)
-            makeMusic()
-          }
-        }
-        makeMusic()
-
+    let type = rand(2)
+    let Sounds = [null,
+      [
+        randSound(56, 'Bass (*).WAV'),
+        randSound(28, 'Drums (*).WAV'),
+        randSound(21, 'Guitar (*).WAV'),
+        randSound(21, 'Guitar (*).WAV'),
+        randSound(35, 'Keys (*).WAV'),
+        randSound(35, 'Keys (*).WAV'),
+        randSound(63, 'Perc (*).WAV'),
+        randSound(63, 'Perc (*).WAV'),
+        randSound(49, 'Seq (*).WAV'),
+        randSound(77, 'Synth (*).WAV')
+      ],
+      [
+        randSound(63, 'Bass (*).WAV'),
+        randSound(32, 'Drums (*).WAV'),
+        randSound(21, 'Pad (*).WAV'),
+        randSound(91, 'Keys (*).WAV'),
+        randSound(64, 'Perc (*).WAV'),
+        randSound(49, 'Seq (*).WAV'),
+        randSound(63, 'Synth (*).WAV')
+      ]
+    ]
+    console.log(type)
+    let sounds
+    let longest = 0
+    const makeMusic = () => {
+      const getSounds = audio.fetchAudio(Sounds[type], '/' + type + '/').then((arr) => {
+        sounds = arr.map(b => {
+          longest = b.buffer.length > longest ? b.buffer.length : longest
+          return b.buffer
+        })
       })
-      .catch((error) => {
-        // => Error Message
-      });
+
+      const music = []
+
+      getSounds.then(() => {
+        console.log(sounds, longest)
+
+        sounds = sounds.map((sound, i) => {
+          let multi = longest / sound.length
+          try {
+            multi = (multi + '').split('.')[1][0] > 5 ? Math.ceil(multi) : Math.floor(multi)
+          }
+          catch (e) { }
+
+          sound = audio.concatAudio([sound], 0, multi)
+          // if (i > 0) {
+          //   music.push(audio.mergeAudio([sound, music[music.length - 1]]))
+          // }
+          // else {
+          //   music.push(sound)
+          // }
+
+          return sound
+        })
+
+        let index = 0
+
+        const Bass = sounds[index++]
+        const Drums = sounds[index++]
+        const Guitar = sounds[index++]
+        const Guitar2 = sounds[index++]
+        const Keys = sounds[index++]
+        const Keys2 = sounds[index++]
+        const Perc = sounds[index++]
+        const Perc2 = sounds[index++]
+        const Seq = sounds[index++]
+        const Synth = sounds[index++]
+
+        const base = audio.mergeAudio([Bass, Drums])
+        const base1 = audio.mergeAudio([Bass, Drums, Guitar])
+        const base2 = audio.mergeAudio([Bass, Drums, Guitar2])
+
+        const base3 = audio.mergeAudio([Bass, Drums, Keys])
+        const base4 = audio.mergeAudio([Bass, Drums, Keys2])
+
+        const base5 = audio.mergeAudio([Bass, Drums, Perc])
+        const base6 = audio.mergeAudio([Bass, Drums, Perc2])
+
+        const step1 = audio.concatAudio([base, base1, base2, base3, base4, base5, base6])
+
+        console.log(music)
+
+        // const small1 = audio.concatAudio([smallSounds[0]], 0, 2)
+        // const small2 = audio.concatAudio([smallSounds[1]], 0, 2)
+        // const small3 = audio.concatAudio([smallSounds[2]], 0, 2)
+        // const small4 = audio.concatAudio([smallSounds[3]], 0, 2)
+        // const small5 = audio.concatAudio([smallSounds[4]], 0, 2)
+
+        // const middle1 = middleSounds[0]
+        // const middle2 = middleSounds[1]
+
+        // const long1 = longSounds[0]
+        // const long2 = longSounds[1]
+
+        // const base = audio.mergeAudio([small1, small2]);
+        // const longBase = audio.concatAudio([base], 0, 2)
+
+        // const base1 = audio.mergeAudio([base, small3]);
+        // const base2 = audio.mergeAudio([base, small4]);
+        // const base2bis = audio.mergeAudio([base, audio.mergeAudio([small3, small4])]);
+
+        // const base3 = audio.mergeAudio([base, middle1]);
+        // const base4 = audio.mergeAudio([base, middle2]);
+
+        // const base5 = audio.mergeAudio([longBase, long1]);
+        // const base6 = audio.mergeAudio([longBase, long2]);
+
+        let merged = audio.concatAudio([step1])
+        console.log('final duration :' + merged.duration);
+        const output = audio.export(merged, 'audio/wav')
+        audio.play(merged)
+        console.log(output);
+        // const download = audio.download(output.blob, '' + 1000000 + rand(1000000));
+      })
+        .catch((error) => {
+          // => Error Message
+          console.log(error)
+        });
+
+      if (this.count - ++i > 0) {
+        // console.log(this.count)
+        makeMusic()
+      }
+    }
+    let i = 0
+    makeMusic()
 
     audio.notSupported(() => {
       // Handle no browser support
