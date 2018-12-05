@@ -38,11 +38,15 @@ class Crunker {
   }
 
   mergeAudio(buffers) {
-    let output = this._context.createBuffer(1, this._maxDuration(buffers), frames);
+    let output = this._context.createBuffer(2, this._maxDuration(buffers), frames);
     buffers.map(buffer => {
       try {
+        if (!buffer) { return }
         for (let i = buffer.getChannelData(0).length - 1; i >= 0; i--) {
           output.getChannelData(0)[i] += buffer.getChannelData(0)[i];
+        }
+        for (let i = buffer.getChannelData(1).length - 1; i >= 0; i--) {
+          output.getChannelData(1)[i] += buffer.getChannelData(1)[i];
         }
       }
       catch (e) {
@@ -64,14 +68,16 @@ class Crunker {
 
   concatAudio(buffers, time = 0, loop = 1) {
     const length = time ? time * 48000 * buffers.length : this._totalDuration(buffers)
-    let output = this._context.createBuffer(1, length * loop, frames),
+    let output = this._context.createBuffer(2, length * loop, frames),
       offset = 0;
 
     while (loop-- > 0) {
       // buffers = shuffle(buffers)
       buffers.map(buffer => {
+        if (!buffer) { return }
         try {
           output.getChannelData(0).set(buffer.getChannelData(0), offset);
+          output.getChannelData(1).set(buffer.getChannelData(1), offset);
         }
         catch (e) {
           console.log(buffer, e)
@@ -144,11 +150,12 @@ class Crunker {
   }
 
   _maxDuration(buffers) {
-    return Math.max.apply(Math, buffers.map(buffer => buffer.length));
+    const arr = buffers.map(buffer => buffer ? buffer.length : 0)
+    return Math.max(...arr);
   }
 
   _totalDuration(buffers) {
-    return buffers.map(buffer => buffer.length).reduce((a, b) => a + b, 0);
+    return buffers.map(buffer => buffer && buffer.length).reduce((a, b) => a + b, 0);
   }
 
   _isSupported() {
@@ -251,34 +258,83 @@ class App extends Component {
   }
 
   run() {
-    let type = rand(2)
-    let Sounds = [null,
-      [
-        randSound(56, 'Bass (*).WAV'),
-        randSound(28, 'Drums (*).WAV'),
-        randSound(21, 'Guitar (*).WAV'),
-        randSound(21, 'Guitar (*).WAV'),
-        randSound(35, 'Keys (*).WAV'),
-        randSound(35, 'Keys (*).WAV'),
-        randSound(63, 'Perc (*).WAV'),
-        randSound(63, 'Perc (*).WAV'),
-        randSound(49, 'Seq (*).WAV'),
-        randSound(77, 'Synth (*).WAV')
-      ],
-      [
-        randSound(63, 'Bass (*).WAV'),
-        randSound(32, 'Drums (*).WAV'),
-        randSound(21, 'Pad (*).WAV'),
-        randSound(91, 'Keys (*).WAV'),
-        randSound(64, 'Perc (*).WAV'),
-        randSound(49, 'Seq (*).WAV'),
-        randSound(63, 'Synth (*).WAV')
-      ]
-    ]
-    console.log(type)
-    let sounds
-    let longest = 0
     const makeMusic = () => {
+      let type = rand(3)
+      let Sounds = [
+        [
+          randSound(175, 'Bass (*).WAV'),
+          randSound(175, 'Bass (*).WAV'),
+          randSound(145, 'Drums (*).WAV'),
+          randSound(145, 'Drums (*).WAV'),
+          randSound(161, 'Keys (*).WAV'),
+          randSound(161, 'Keys (*).WAV'),
+          randSound(335, 'Perc (*).WAV'),
+          randSound(335, 'Perc (*).WAV'),
+          randSound(168, 'Seq (*).WAV'),
+          randSound(168, 'Seq (*).WAV'),
+          randSound(210, 'Synth (*).WAV'),
+          randSound(210, 'Synth (*).WAV'),
+          randSound(21, 'Guitar (*).WAV'),
+          randSound(21, 'Guitar (*).WAV'),
+          randSound(91, 'Pad (*).WAV'),
+          randSound(91, 'Pad (*).WAV'),
+        ],
+        [
+          randSound(56, 'Bass (*).WAV'),
+          randSound(56, 'Bass (*).WAV'),
+          randSound(28, 'Drums (*).WAV'),
+          randSound(28, 'Drums (*).WAV'),
+          randSound(35, 'Keys (*).WAV'),
+          randSound(35, 'Keys (*).WAV'),
+          randSound(63, 'Perc (*).WAV'),
+          randSound(63, 'Perc (*).WAV'),
+          randSound(49, 'Seq (*).WAV'),
+          randSound(49, 'Seq (*).WAV'),
+          randSound(77, 'Synth (*).WAV'),
+          randSound(77, 'Synth (*).WAV'),
+
+          randSound(21, 'Guitar (*).WAV'),
+          randSound(21, 'Guitar (*).WAV'),
+        ],
+        [
+          randSound(63, 'Bass (*).WAV'),
+          randSound(63, 'Bass (*).WAV'),
+          randSound(32, 'Drums (*).WAV'),
+          randSound(32, 'Drums (*).WAV'),
+          randSound(91, 'Keys (*).WAV'),
+          randSound(91, 'Keys (*).WAV'),
+          randSound(64, 'Perc (*).WAV'),
+          randSound(64, 'Perc (*).WAV'),
+          randSound(49, 'Seq (*).WAV'),
+          randSound(49, 'Seq (*).WAV'),
+          randSound(63, 'Synth (*).WAV'),
+          randSound(63, 'Synth (*).WAV'),
+
+          randSound(21, 'Pad (*).WAV'),
+          randSound(21, 'Pad (*).WAV'),
+        ],
+        [
+          randSound(56, 'Bass (*).WAV'),
+          randSound(56, 'Bass (*).WAV'),
+          randSound(85, 'Drums (*).WAV'),
+          randSound(85, 'Drums (*).WAV'),
+          randSound(35, 'Keys (*).WAV'),
+          randSound(35, 'Keys (*).WAV'),
+          randSound(54, 'Perc (*).WAV'),
+          randSound(54, 'Perc (*).WAV'),
+          randSound(49, 'Seq (*).WAV'),
+          randSound(70, 'Seq (*).WAV'),
+          randSound(70, 'Synth (*).WAV'),
+          randSound(70, 'Synth (*).WAV'),
+
+          randSound(49, 'Pad (*).WAV'),
+          randSound(49, 'Pad (*).WAV'),
+        ]
+      ]
+      console.log(type, Sounds[type])
+      let sounds
+      let longest = 0
+
       const getSounds = audio.fetchAudio(Sounds[type], '/' + type + '/').then((arr) => {
         sounds = arr.map(b => {
           longest = b.buffer.length > longest ? b.buffer.length : longest
@@ -299,12 +355,6 @@ class App extends Component {
           catch (e) { }
 
           sound = audio.concatAudio([sound], 0, multi)
-          // if (i > 0) {
-          //   music.push(audio.mergeAudio([sound, music[music.length - 1]]))
-          // }
-          // else {
-          //   music.push(sound)
-          // }
 
           return sound
         })
@@ -312,61 +362,49 @@ class App extends Component {
         let index = 0
 
         const Bass = sounds[index++]
+        const Bass2 = sounds[index++]
         const Drums = sounds[index++]
-        const Guitar = sounds[index++]
-        const Guitar2 = sounds[index++]
+        const Drums2 = sounds[index++]
         const Keys = sounds[index++]
         const Keys2 = sounds[index++]
         const Perc = sounds[index++]
         const Perc2 = sounds[index++]
         const Seq = sounds[index++]
+        const Seq2 = sounds[index++]
         const Synth = sounds[index++]
+        const Synth2 = sounds[index++]
+        const PadGuitar = sounds[index++]
+        const PadGuitar2 = sounds[index++]
 
-        const base = audio.mergeAudio([Bass, Drums])
-        const base1 = audio.mergeAudio([Bass, Drums, Guitar])
-        const base2 = audio.mergeAudio([Bass, Drums, Guitar2])
+        const PK = rand(2) ? Perc : Keys
+        const PK2 = rand(2) ? Perc2 : Keys2
 
-        const base3 = audio.mergeAudio([Bass, Drums, Keys])
-        const base4 = audio.mergeAudio([Bass, Drums, Keys2])
+        const S2 = rand(2) ? Seq : Synth
+        const S22 = rand(2) ? Seq2 : Synth2
 
-        const base5 = audio.mergeAudio([Bass, Drums, Perc])
-        const base6 = audio.mergeAudio([Bass, Drums, Perc2])
-
-        const step1 = audio.concatAudio([base, base1, base2, base3, base4, base5, base6])
+        const base = [
+          audio.mergeAudio([Bass, Drums]),
+          audio.mergeAudio([Bass2, Drums2, PK]),
+          audio.mergeAudio([Bass, Drums, PK, PK2]),
+          audio.mergeAudio([Bass2, Drums2, PK2, S2]),
+          audio.mergeAudio([Bass, Drums, S2, S22]),
+          audio.mergeAudio([Bass2, Drums2, S22, PK]),
+          audio.mergeAudio([Bass, Drums, PK, PK2]),
+          audio.mergeAudio([Bass2, Drums2, PK2, PadGuitar]),
+          audio.mergeAudio([Bass, Drums, PadGuitar, PadGuitar2]),
+        ]
 
         console.log(music)
 
-        // const small1 = audio.concatAudio([smallSounds[0]], 0, 2)
-        // const small2 = audio.concatAudio([smallSounds[1]], 0, 2)
-        // const small3 = audio.concatAudio([smallSounds[2]], 0, 2)
-        // const small4 = audio.concatAudio([smallSounds[3]], 0, 2)
-        // const small5 = audio.concatAudio([smallSounds[4]], 0, 2)
-
-        // const middle1 = middleSounds[0]
-        // const middle2 = middleSounds[1]
-
-        // const long1 = longSounds[0]
-        // const long2 = longSounds[1]
-
-        // const base = audio.mergeAudio([small1, small2]);
-        // const longBase = audio.concatAudio([base], 0, 2)
-
-        // const base1 = audio.mergeAudio([base, small3]);
-        // const base2 = audio.mergeAudio([base, small4]);
-        // const base2bis = audio.mergeAudio([base, audio.mergeAudio([small3, small4])]);
-
-        // const base3 = audio.mergeAudio([base, middle1]);
-        // const base4 = audio.mergeAudio([base, middle2]);
-
-        // const base5 = audio.mergeAudio([longBase, long1]);
-        // const base6 = audio.mergeAudio([longBase, long2]);
-
-        let merged = audio.concatAudio([step1])
+        let merged = audio.concatAudio(base)
         console.log('final duration :' + merged.duration);
         const output = audio.export(merged, 'audio/wav')
-        audio.play(merged)
-        console.log(output);
-        // const download = audio.download(output.blob, '' + 1000000 + rand(1000000));
+        setTimeout(() => {
+          audio.play(merged)
+        }, time);
+        time += merged.duration * 1000 + 1000
+        console.log(merged);
+        const download = audio.download(output.blob, '' + 1000000 + rand(1000000));
       })
         .catch((error) => {
           // => Error Message
@@ -379,6 +417,7 @@ class App extends Component {
       }
     }
     let i = 0
+    let time = 0
     makeMusic()
 
     audio.notSupported(() => {
@@ -408,6 +447,7 @@ class App extends Component {
   count = 1
   render() {
     // this.run(10)
+    // this.run.bind(this)()
     return (
       <div className="App">
         <header className="App-header">
