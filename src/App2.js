@@ -259,7 +259,7 @@ class App extends Component {
 
   run() {
     const makeMusic = () => {
-      let type = 4//rand(4, 1)
+      let type = rand(4, 1)
       let Sounds = [null,
         [
           randSound(56, 'Bass (*).WAV'),
