@@ -259,7 +259,7 @@ class App extends Component {
 
   run() {
     const makeMusic = () => {
-      let type = rand(4, 1)
+      let type = rand(6, 1)
       let Sounds = [null,
         [
           randSound(56, 'Bass (*).WAV'),
@@ -328,6 +328,38 @@ class App extends Component {
 
           rand(2) ? randSound(28, 'Guitar (*).WAV') : randSound(35, 'Pad (*).WAV'),
           rand(2) ? randSound(28, 'Guitar (*).WAV') : randSound(35, 'Pad (*).WAV'),
+        ],
+        [
+          randSound(28, 'Bass (*).WAV'),
+          randSound(28, 'Bass (*).WAV'),
+          randSound(42, 'Drums (*).WAV'),
+          randSound(42, 'Drums (*).WAV'),
+          randSound(21, 'Keys (*).WAV'),
+          randSound(21, 'Keys (*).WAV'),
+          randSound(49, 'Perc (*).WAV'),
+          randSound(49, 'Perc (*).WAV'),
+          randSound(34, 'Seq (*).WAV'),
+          randSound(34, 'Seq (*).WAV'),
+          randSound(35, 'Synth (*).WAV'),
+          randSound(35, 'Synth (*).WAV'),
+          randSound(56, 'Guitar (*).WAV'),
+          randSound(56, 'Guitar (*).WAV'),
+        ],
+        [
+          randSound(24, 'Bass (*).WAV'),
+          randSound(24, 'Bass (*).WAV'),
+          randSound(13, 'Drums (*).WAV'),
+          randSound(13, 'Drums (*).WAV'),
+          randSound(24, 'Keys (*).WAV'),
+          randSound(24, 'Keys (*).WAV'),
+          randSound(22, 'Perc (*).WAV'),
+          randSound(22, 'Perc (*).WAV'),
+          randSound(18, 'Seq (*).WAV'),
+          randSound(18, 'Seq (*).WAV'),
+          randSound(30, 'Synth (*).WAV'),
+          randSound(30, 'Synth (*).WAV'),
+          randSound(12, 'Guitar (*).WAV'),
+          randSound(12, 'Guitar (*).WAV'),
         ]
       ]
       console.log(type, Sounds[type])
