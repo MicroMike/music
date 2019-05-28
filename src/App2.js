@@ -352,8 +352,8 @@ class App extends Component {
           randSound(13, 'Drums (*).WAV'),
           randSound(24, 'Keys (*).WAV'),
           randSound(24, 'Keys (*).WAV'),
-          randSound(22, 'Perc (*).WAV'),
-          randSound(22, 'Perc (*).WAV'),
+          randSound(21, 'Perc (*).WAV'),
+          randSound(21, 'Perc (*).WAV'),
           randSound(18, 'Seq (*).WAV'),
           randSound(18, 'Seq (*).WAV'),
           randSound(30, 'Synth (*).WAV'),
@@ -435,7 +435,7 @@ class App extends Component {
         }, time);
         time += merged.duration * 1000 + 1000
         console.log(merged);
-        const download = audio.download(output.blob, '' + 1000000 + rand(1000000));
+        const download = audio.download(output.blob, '' + type + 1000000 + rand(1000000));
       })
         .catch((error) => {
           // => Error Message
